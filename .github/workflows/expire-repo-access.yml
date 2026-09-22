@@ -1,0 +1,40 @@
+name: expire-repo-access
+
+# Runs daily and removes any collaborator whose expiry date has passed.
+# This cron is what makes the system just-in-time rather than "grant and forget".
+# Revoke granularity == cron frequency: daily here (within 24h of the date).
+
+on:
+  schedule:
+    - cron: "0 3 * * *"     # 03:00 UTC daily
+  workflow_dispatch: {}      # allow manual run too
+
+permissions:
+  contents: write
+
+jobs:
+  expire:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mint short-lived App token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.JIT_APP_ID }}
+          private-key: ${{ secrets.JIT_APP_KEY }}
+          owner: ${{ github.repository_owner }}   # no `repositories:` -> covers all installed repos
+
+      - name: Sweep expired grants
+        env:
+          ORG: ${{ github.repository_owner }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: scripts/expire.sh
+
+      - name: Commit state
+        run: |
+          git config user.name  jit-bot
+          git config user.email jit-bot@users.noreply.github.com
+          git commit -am "expire sweep $(date -u +%F)" || echo "no changes"
+          git push || true

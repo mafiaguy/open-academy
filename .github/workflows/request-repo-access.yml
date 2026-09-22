@@ -1,0 +1,59 @@
+name: request-repo-access
+
+# Requester runs this from the Actions tab (or via `gh workflow run`).
+# The job pauses on the `access-approval` environment until one of your
+# required reviewers approves, then grants the collaborator and records it.
+
+on:
+  workflow_dispatch:
+    inputs:
+      username:
+        description: "GitHub username to grant"
+        required: true
+      repo:
+        description: "Target repo (name only, same org)"
+        required: true
+      permission:
+        description: "pull | triage | push | maintain | admin"
+        required: true
+        default: push
+      expiry:
+        description: "Access valid THROUGH this date (YYYY-MM-DD)"
+        required: true
+
+permissions:
+  contents: write        # to commit grants.json
+
+jobs:
+  grant:
+    runs-on: ubuntu-latest
+    environment: access-approval      # <-- required reviewers (your 1-2 approvers) gate here
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Mint short-lived App token
+        id: app
+        uses: actions/create-github-app-token@v2
+        with:
+          app-id: ${{ vars.JIT_APP_ID }}
+          private-key: ${{ secrets.JIT_APP_KEY }}
+          owner: ${{ github.repository_owner }}
+          repositories: ${{ github.event.inputs.repo }}
+
+      - name: Grant + record
+        env:
+          ORG: ${{ github.repository_owner }}
+          GH_TOKEN: ${{ steps.app.outputs.token }}
+        run: |
+          scripts/grant.sh \
+            "${{ github.event.inputs.username }}" \
+            "${{ github.event.inputs.repo }}" \
+            "${{ github.event.inputs.permission }}" \
+            "${{ github.event.inputs.expiry }}"
+
+      - name: Commit state
+        run: |
+          git config user.name  jit-bot
+          git config user.email jit-bot@users.noreply.github.com
+          git commit -am "grant: ${{ github.event.inputs.username }} -> ${{ github.event.inputs.repo }} until ${{ github.event.inputs.expiry }}"
+          git push
