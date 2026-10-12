@@ -1,128 +1,41 @@
-# github-repo-jit
+# OpenComp Academy
 
-Just-in-time repo access for a GitHub org, with **no frontend to build**. A person
-requests access to a repo, one of your 1-2 approvers clicks approve, they get added
-as a collaborator, and a daily job removes them once their expiry date passes.
+OpenComp Academy makes practical computer education clear and connected. Courses cover systems foundations, security, cloud engineering, site reliability, and software deployment.
 
-It uses only native GitHub features: `workflow_dispatch` (the request form),
-Environments + required reviewers (the approval gate), a GitHub App (the
-grant/revoke identity — no long-lived PAT), a cron workflow (the auto-revoke),
-and `grants.json` in git (state + audit log).
+## Run locally
 
-```
-request  ->  human approval  ->  grant collaborator  ->  daily sweep  ->  revoke on expiry
- (form)     (env reviewers)        (App token)            (cron)          (App token)
+The public site is static and has no package installation or build step:
+
+```sh
+ruby -run -e httpd . -p 8000
 ```
 
----
+Open <http://localhost:8000>. The Security 101 learning preview needs a local server because it loads course content from JSON. Its lesson progress and written workbook are stored in the current browser only. It is a prototype, not real authentication, synced enrollment, payment, video hosting, or certificate issuance.
 
-## What you need
+## Structure
 
-**On your machine (to run/test locally):**
-- `git`
-- `gh` — GitHub CLI, logged in (`gh auth login`)
-- `jq`
-- `bash`
+- `index.html`, `styles.css`, `brand.css`, `app.js`, `catalog.js` — public company homepage, responsive design, and course search.
+- `courses/<slug>/index.html` — public, crawlable course detail pages.
+- `courses/security-engineering/course.json` — 12 Security 101 lessons, written explanations, checks, guided activities, and embedded video metadata.
+- `lms/security-engineering/` — course preview and a lesson-by-lesson learner view with progress and an in-browser workbook.
+- `courses/COURSE_TEMPLATE.md` — guidance for adding courses with consistent page structure.
+- `robots.txt`, `sitemap.xml`, `favicon.svg` — public indexing and site identity.
+- `docs/repo-access-automation.md`, `.github/workflows/`, `scripts/`, `grants.json` — repository access automation preserved from the original repository.
 
-**In GitHub (one-time setup):**
-- An **org** (this manages collaborator access to org repos).
-- A **GitHub App** owned by the org, installed on the repos you want to manage.
-- One **repo to host this project** (your "ops" repo) — where these workflows,
-  `grants.json`, and the approvals live.
+## Course and certificate model
 
----
+Course learning is designed around curated, attributed resources and practical work. Learning access is intended to be free. A course completion certificate is optional, offered after course requirements are met, and requires a separate fee. The certificate price, actual authentication and enrollment, payment processor, content hosting, and verification service need to be configured before launch.
 
-## Setup (one-time)
+The first LMS preview is for Security 101, a 4–6 hour breadth-first introduction. It has 12 lessons across four units, with lesson notes, knowledge checks, written practice, an access-control simulation, and local progress. Other public course pages show curriculum and intended outcomes; their LMS flows are still being developed.
 
-### 1. Create the GitHub App
-Org → Settings → Developer settings → GitHub Apps → **New GitHub App**.
-- Repository permissions → **Administration: Read & write** (this is what allows
-  adding/removing collaborators). Nothing else needed.
-- Uncheck Webhook (not used).
-- Create it, then **Generate a private key** (downloads a `.pem`).
-- **Install App** → choose the repos you want JIT to manage (include this ops repo).
-- Note the **App ID**.
+## Curriculum contributions
 
-### 2. Add the App credentials to the ops repo
-Ops repo → Settings →
-- **Secrets and variables → Actions → Variables** → `JIT_APP_ID` = the App ID.
-- **Secrets and variables → Actions → Secrets** → `JIT_APP_KEY` = paste the full
-  contents of the `.pem` file.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [courses/COURSE_TEMPLATE.md](courses/COURSE_TEMPLATE.md). Link to third-party resources rather than rehosting them, and confirm attribution, access, licensing, and embedding terms.
 
-> Never commit the `.pem`. `.gitignore` already excludes `*.pem`.
+## Hosting
 
-### 3. Create the approval gate (your reviewers)
-Ops repo → Settings → **Environments → New environment** → name it exactly
-`access-approval`.
-- Enable **Required reviewers** and add your **1-2 approvers**.
-- (Optional) set a wait timer or restrict to specific branches.
+The site can be served by a static host with clean directory URLs. Canonical URLs currently use `https://opencomp.academy/`; update page metadata, `robots.txt`, and `sitemap.xml` together if that domain changes.
 
-That environment is your entire approval UI — GitHub shows approvers the native
-"Review deployments" approve/reject button.
+## License
 
-### 4. Push this repo
-```bash
-git init && git add . && git commit -m "jit repo access"
-git remote add origin git@github.com:<ORG>/<OPS_REPO>.git
-git push -u origin main
-```
-
-Done. No servers, no Lambda, no Identity Center.
-
----
-
-## Daily use
-
-**Request access** (requester needs write on the ops repo — see note below):
-Actions tab → **request-repo-access** → Run workflow → fill username, repo,
-permission, expiry. Or:
-```bash
-gh workflow run request-repo-access.yml \
-  -f username=alice -f repo=payments-api -f permission=push -f expiry=2025-12-31
-```
-The run pauses; an approver approves; the collaborator is added and logged.
-
-**Revoke** happens automatically. `expire-repo-access` runs daily at 03:00 UTC and
-removes anyone whose `expiry` is before today. Run it manually any time from the
-Actions tab to force a sweep.
-
-**Audit** = `git log grants.json`. Every grant and sweep is a commit.
-
----
-
-## Test locally before wiring it up
-
-You can exercise the exact grant/revoke logic the workflows use, straight from your
-machine, using your own `gh` token:
-
-```bash
-# safe dry run of the expiry sweep — prints what WOULD be revoked, changes nothing
-ORG=<your-org> GH_TOKEN=$(gh auth token) DRY_RUN=1 scripts/expire.sh
-
-# grant for real (your gh token needs admin on the repo)
-ORG=<your-org> GH_TOKEN=$(gh auth token) scripts/grant.sh alice test-repo push 2025-12-31
-cat grants.json
-
-# put a past date in grants.json, then run the real sweep to see the revoke
-ORG=<your-org> GH_TOKEN=$(gh auth token) scripts/expire.sh
-```
-
-Locally the scripts only touch the API and `grants.json` — they do not commit or
-push (that part lives in the workflows).
-
----
-
-## Notes / gotchas
-
-- **Access is valid THROUGH the expiry date**; removal happens the day after.
-  Want removal *on* the date? change `<` to `<=` in `scripts/expire.sh`.
-- **Revoke granularity = cron frequency.** Daily = within 24h. Tighten the cron
-  (`scripts/../expire-repo-access.yml`) for same-hour removal.
-- **Who can request.** `workflow_dispatch` requires write on the ops repo. If
-  requesters shouldn't have that, swap the trigger to an **issue form** (anyone can
-  open an issue) and parse its fields into the same `scripts/grant.sh` call — the
-  approval gate stays the same.
-- **Org members vs outside collaborators.** For someone outside the org, the grant
-  creates an invitation they must accept; the sweep removes/cancels accordingly.
-- **The only real secret is `JIT_APP_KEY`.** Keep write access to the ops repo tight
-  since approvals and state live there. No PAT is stored anywhere.
+Choose and add a project license before accepting broad external contributions. Educational content and application code should have explicit, compatible licensing.
