@@ -1,4 +1,4 @@
-# Contributing to OpenComp Academy
+# Contributing to OpenTech Academy
 
 Thanks for helping make practical security education more accessible. You can propose a correction, lesson, lab, or resource through a GitHub issue or pull request.
 

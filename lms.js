@@ -1,5 +1,29 @@
-const courseUrl = '/courses/security-engineering/course.json';
-const progressKey = 'opencompSecurity101Progress_v1';
+import { authClient, authIsConfigured } from './auth-client.js';
+
+async function initializeLearnerSpace() {
+const courseUrl = `${document.body.dataset.courseUrl}?v=course-content-5`;
+const courseSlug = document.body.dataset.courseSlug || 'security-engineering';
+document.body.dataset.authState = authIsConfigured ? 'checking' : 'preview';
+if (authIsConfigured) {
+  try {
+    const session = await authClient.getSession();
+    if (!session.data?.user) {
+      window.location.replace(`/lms/start.html?course=${encodeURIComponent(courseSlug)}`);
+      return;
+    }
+    document.body.dataset.authState = 'authenticated';
+    const accountTag = document.querySelector('.lms-preview-tag');
+    accountTag.textContent = `SIGNED IN · ${session.data.user.email}`;
+    const disclaimer = document.querySelector('.login-disclaimer');
+    disclaimer.innerHTML = '<strong>Signed in.</strong> Your course progress is currently saved in this browser.';
+  } catch {
+    window.location.replace(`/lms/start.html?course=${encodeURIComponent(courseSlug)}&auth=unavailable`);
+    return;
+  }
+}
+const progressKey = courseSlug === 'security-engineering'
+  ? 'opentechSecurity101Progress_v1'
+  : `opentechCourseProgress:${courseSlug}:v1`;
 const navRoot = document.querySelector('#module-navigation');
 let course;
 let lessons = [];
@@ -25,7 +49,7 @@ function lessonId(index) {
 
 function isComplete(index) {
   const state = progress[lessonId(index)] || {};
-  return Boolean(state.quiz && state.practice);
+  return Boolean(state.quiz && state.scenario);
 }
 
 function completedCount() {
@@ -43,6 +67,7 @@ function renderProgress() {
   document.querySelector('#lms-progress-label').textContent = `${count} of ${lessons.length} lessons complete`;
   document.querySelector('#lms-progress-percent').textContent = `${Math.round((count / lessons.length) * 100)}%`;
   document.querySelector('#course-progress').value = count;
+  document.querySelector('#course-progress').max = lessons.length;
   navRoot.querySelectorAll('[data-lesson]').forEach((button) => {
     const index = Number(button.dataset.lesson);
     button.dataset.complete = String(isComplete(index));
@@ -54,6 +79,74 @@ function renderProgress() {
 function renderNotes(lesson) {
   const root = document.querySelector('#lesson-notes');
   root.replaceChildren(...lesson.notes.map((paragraph) => el('p', '', paragraph)));
+}
+
+function renderResources(lesson) {
+  const root = document.querySelector('#lesson-resources');
+  const resources = [...(lesson.resources || [])].sort((a, b) => {
+    const rank = (item) => item.kind === 'video' ? 0 : item.kind === 'pdf' || /\.pdf(?:$|[?#])/i.test(item.url || '') ? 1 : 2;
+    return rank(a) - rank(b);
+  });
+  root.replaceChildren();
+  if (!resources.length) {
+    root.append(el('p', 'resources-empty', 'The lesson notes above are the reading for this lesson. More curated sources are being added.'));
+    return;
+  }
+  resources.forEach((resource) => {
+    const card = el('article', 'resource-card');
+    const isPdf = resource.kind === 'pdf' || /\.pdf(?:$|[?#])/i.test(resource.url || '');
+    const kind = isPdf ? 'PDF' : resource.kind === 'video' ? 'VIDEO' : 'READING';
+    card.append(el('div', 'resource-kind', `${kind} · ${resource.provider}`));
+    card.append(el('h3', '', resource.title));
+    card.append(el('p', '', resource.summary));
+    let videoEmbed = resource.embed;
+    if (!videoEmbed && resource.kind === 'video') {
+      const youtubePlaylistId = resource.url?.match(/[?&]list=([\w-]+)/)?.[1];
+      const youtubeId = resource.url?.match(/(?:youtube\.com\/(?:watch\?.*v=|embed\/)|youtu\.be\/)([\w-]{11})/)?.[1];
+      if (youtubePlaylistId) videoEmbed = `https://www.youtube-nocookie.com/embed/videoseries?list=${youtubePlaylistId}`;
+      else if (youtubeId) videoEmbed = `https://www.youtube-nocookie.com/embed/${youtubeId}`;
+      const vimeoId = resource.url?.match(/vimeo\.com\/(\d+)/)?.[1];
+      if (!videoEmbed && vimeoId) videoEmbed = `https://player.vimeo.com/video/${vimeoId}`;
+    }
+    if (isPdf) {
+      const frame = el('iframe', 'resource-pdf');
+      frame.src = resource.embed || resource.url;
+      frame.title = `${resource.title} PDF viewer`;
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      card.append(frame);
+      card.append(el('p', 'resource-viewer-help', 'If the document viewer is blank, use the publisher link below to open or download the PDF.'));
+    } else if (videoEmbed) {
+      const frame = el('iframe', 'resource-video');
+      frame.src = videoEmbed;
+      frame.title = resource.title;
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.allow = 'accelerometer; encrypted-media; picture-in-picture; web-share';
+      frame.allowFullscreen = true;
+      card.append(frame);
+    } else if (resource.kind === 'video') {
+      card.append(el('p', 'resource-viewer-help', 'This publisher does not provide an embeddable player for this link. Use the publisher link below to watch.'));
+    } else {
+      const viewer = el('details', 'resource-reading-viewer');
+      const summary = el('summary', '', 'Read in this lesson');
+      const frame = el('iframe', 'resource-reading-frame');
+      frame.src = resource.url;
+      frame.title = `${resource.title} reading`;
+      frame.loading = 'lazy';
+      frame.referrerPolicy = 'strict-origin-when-cross-origin';
+      frame.setAttribute('sandbox', 'allow-scripts allow-forms allow-popups');
+      viewer.append(summary, frame, el('p', 'resource-viewer-help', 'Some publishers block embedded pages. If the article does not load here, use the publisher link below.'));
+      card.append(viewer);
+    }
+    const link = el('a', 'resource-link', isPdf ? 'Open publisher PDF ↗' : resource.kind === 'video' ? 'Open video resource ↗' : 'Open publisher reading ↗');
+    link.href = resource.url;
+    link.target = '_blank';
+    link.rel = 'noopener noreferrer';
+    link.setAttribute('aria-label', `${link.textContent}: ${resource.title}`);
+    card.append(link);
+    root.append(card);
+  });
 }
 
 function renderVideo(lesson) {
@@ -78,22 +171,6 @@ function markStep(step) {
   state[step] = true;
   progress[lessonId(currentIndex)] = state;
   persist();
-}
-
-function worksheetKey() {
-  return `${progressKey}:worksheet:${lessonId(currentIndex)}`;
-}
-
-function maybeCompletePractice() {
-  const state = progress[lessonId(currentIndex)] || {};
-  let answers = [];
-  try { answers = JSON.parse(localStorage.getItem(worksheetKey()) || '[]'); } catch { /* Ignore invalid saved notes. */ }
-  const prompts = lessons[currentIndex].lesson.practice.reflection || [];
-  if (state.scenario && prompts.length && prompts.every((_, index) => (answers[index] || '').trim().length >= 30)) {
-    state.practice = true;
-    progress[lessonId(currentIndex)] = state;
-    persist();
-  }
 }
 
 function feedbackNode(className) {
@@ -169,62 +246,9 @@ function renderScenarioPractice(practice, root) {
     feedback.dataset.state = correct ? 'correct' : 'try-again';
     if (correct) {
       markStep('scenario');
-      maybeCompletePractice();
     }
   });
   root.append(form);
-}
-
-function renderWorksheet(practice, root) {
-  if (!practice.reflection?.length) return;
-  const worksheet = el('div', 'lesson-worksheet');
-  worksheet.append(el('h3', '', 'Write it down'));
-  worksheet.append(el('p', 'worksheet-intro', 'Use the prompts to connect the idea to a real design decision. Write one or two sentences for each; your answers stay in this browser.'));
-  let answers = [];
-  try { answers = JSON.parse(localStorage.getItem(worksheetKey()) || '[]'); } catch { answers = []; }
-  const fields = practice.reflection.map((prompt, index) => {
-    const label = el('label', 'worksheet-field');
-    label.append(el('strong', '', `Step ${index + 1}`), el('span', '', prompt));
-    const input = document.createElement('textarea');
-    input.rows = index === practice.reflection.length - 1 ? 4 : 3;
-    input.maxLength = 1200;
-    input.minLength = 30;
-    input.required = true;
-    input.value = answers[index] || '';
-    label.append(input);
-    worksheet.append(label);
-    return input;
-  });
-  const save = el('button', 'button button-dark practice-submit', 'Save answers');
-  save.type = 'button';
-  const feedback = feedbackNode('practice-feedback');
-  if (progress[lessonId(currentIndex)]?.practice) {
-    feedback.textContent = 'Your answers are saved and this activity is complete.';
-    feedback.dataset.state = 'correct';
-  }
-  save.addEventListener('click', () => {
-    const values = fields.map((field) => field.value.trim());
-    if (values.some((answer) => answer.length < 30)) {
-      feedback.textContent = 'Please answer each prompt with at least a short sentence (30 characters).';
-      feedback.dataset.state = 'try-again';
-      fields.find((field) => field.value.trim().length < 30)?.focus();
-      return;
-    }
-    localStorage.setItem(worksheetKey(), JSON.stringify(values));
-    const state = progress[lessonId(currentIndex)] || {};
-    if (state.scenario) {
-      state.practice = true;
-      progress[lessonId(currentIndex)] = state;
-      persist();
-      feedback.textContent = 'Answers saved. Practice complete.';
-      feedback.dataset.state = 'correct';
-      return;
-    }
-    feedback.textContent = 'Answers saved. Complete the scenario above to finish this activity.';
-    feedback.dataset.state = 'neutral';
-  });
-  worksheet.append(save, feedback);
-  root.append(worksheet);
 }
 
 function renderAccessPractice(practice, root) {
@@ -264,7 +288,6 @@ function renderAccessPractice(practice, root) {
       result.textContent = 'Access denied as intended. The simulated server used the account’s real learner permission. Activity complete.';
       result.dataset.state = 'correct';
       markStep('scenario');
-      maybeCompletePractice();
       return;
     }
     result.textContent = 'Access denied for a learner. Change the browser claim to Admin to expose the flaw, then apply the server-side check.';
@@ -280,7 +303,6 @@ function renderPractice(lesson) {
   root.append(el('p', 'practice-title', lesson.practice.title));
   if (lesson.practice.type === 'access-control') renderAccessPractice(lesson.practice, root);
   else renderScenarioPractice(lesson.practice, root);
-  renderWorksheet(lesson.practice, root);
 }
 
 function renderCompletion() {
@@ -290,14 +312,22 @@ function renderCompletion() {
   message.textContent = complete ? 'Lesson complete. You can continue whenever you’re ready.' : '';
   const finalLesson = currentIndex === lessons.length - 1;
   const courseComplete = finalLesson && completedCount() === lessons.length;
+  const certificatePanel = document.querySelector('#certificate-panel');
+  if (certificatePanel) {
+    certificatePanel.hidden = completedCount() !== lessons.length;
+    if (!certificatePanel.dataset.ready) {
+      certificatePanel.innerHTML = `<div class="section-step">OPTIONAL CERTIFICATE</div><h2>Course complete. Want a certificate?</h2><p>Your course learning stays free. A certificate can be purchased after completion, then issued with a unique verification page. Checkout and verified completion are not connected in this preview, so certificates cannot be purchased or issued yet.</p><button class="button button-dark" type="button" disabled aria-describedby="certificate-status">Certificate checkout is being set up</button><p id="certificate-status" class="certificate-status">We’ll enable checkout once your completion is saved to your account and payment is confirmed securely.</p>`;
+      certificatePanel.dataset.ready = 'true';
+    }
+  }
   document.querySelector('#next-lesson').disabled = !complete || finalLesson;
   document.querySelector('#next-lesson').textContent = finalLesson ? (courseComplete ? 'Course complete ✓' : 'Final lesson') : 'Continue to next lesson →';
   document.querySelector('#previous-lesson').disabled = currentIndex === 0;
   document.querySelector('#lesson-next-help').textContent = complete
     ? (finalLesson ? 'You’ve reached the end of the course.' : 'This lesson is done. Continue when you’re ready.')
-    : 'To continue, pass the quick check and save your three practice answers.';
+    : 'To continue, pass the quick check and complete the practice activity.';
   if (currentIndex === lessons.length - 1 && completedCount() === lessons.length) {
-    message.textContent = 'You completed Security 101. You now have a useful foundation and a clear scope for what to study next.';
+        message.textContent = `You completed ${course.title}. You can review any lesson or explore the next course in your learning path.`;
   }
 }
 
@@ -312,6 +342,7 @@ function renderLesson(index) {
   document.querySelector('#lesson-title').textContent = lesson.title;
   document.querySelector('#lesson-summary').textContent = lesson.summary;
   renderNotes(lesson);
+  renderResources(lesson);
   renderVideo(lesson);
   renderQuiz(lesson);
   renderPractice(lesson);
@@ -347,7 +378,7 @@ document.querySelector('#next-lesson').addEventListener('click', () => {
   if (isComplete(currentIndex) && currentIndex < lessons.length - 1) renderLesson(currentIndex + 1);
 });
 
-fetch(courseUrl)
+fetch(courseUrl, { cache: 'no-store' })
   .then((response) => {
     if (!response.ok) throw new Error('Course content could not be loaded.');
     return response.json();
@@ -355,6 +386,9 @@ fetch(courseUrl)
   .then((data) => {
     course = data;
     lessons = course.units.flatMap((unit) => unit.lessons.map((lesson) => ({ unit, lesson })));
+    document.title = `${course.title} learning space — OpenTech Academy`;
+    document.querySelector('#lms-course-title').textContent = course.title;
+    document.querySelector('#lms-course-meta').textContent = `${lessons.length} lessons · ${course.estimatedDuration || course.duration || 'self-paced'}`;
     const savedIndex = Math.min(Number(progress.lastOpenedLesson || 0), lessons.length - 1);
     renderNavigation();
     renderLesson(savedIndex);
@@ -362,3 +396,6 @@ fetch(courseUrl)
   .catch(() => {
     document.querySelector('#lesson-summary').textContent = 'The lesson data could not be loaded. Refresh the page to try again.';
   });
+}
+
+initializeLearnerSpace();

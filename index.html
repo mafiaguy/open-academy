@@ -3,84 +3,121 @@
   <head>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
-    <meta name="theme-color" content="#f7f8f5" />
-    <meta name="description" content="OpenComp Academy makes practical computer and technology education clear, structured, and accessible—from systems foundations to security, cloud, SRE, and DevOps." />
+    <meta name="theme-color" content="#f7f9f5" />
+    <meta name="description" content="Explore practical online computer courses in cybersecurity, cloud engineering, reliability, DevOps, and computer systems." />
     <link rel="canonical" href="https://opencomp.academy/" />
     <link rel="icon" href="/favicon.svg" type="image/svg+xml" />
     <link rel="stylesheet" href="/styles.css" />
     <link rel="stylesheet" href="/brand.css" />
-    <title>OpenComp Academy — Learn to build, run, and secure technology</title>
-    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"OpenComp Academy","url":"https://opencomp.academy/","description":"Structured, practical computer and technology education."}</script>
+    <link rel="stylesheet" href="/marketplace.css" />
+    <title>OpenTech Academy — Practical online computer courses</title>
+    <script type="application/ld+json">{"@context":"https://schema.org","@type":"Organization","name":"OpenTech Academy","url":"https://opencomp.academy/","description":"Structured, practical computer and technology education."}</script>
   </head>
-  <body>
+  <body class="marketplace-home">
     <a class="skip-link" href="#main">Skip to content</a>
-    <header class="site-header">
-      <a class="brand" href="/" aria-label="OpenComp Academy home"><span class="brand-mark" aria-hidden="true">O<span>.</span></span><span>OpenComp<span class="brand-light"> Academy</span></span></a>
+    <header class="site-header marketplace-header">
+      <a class="brand" href="/" aria-label="OpenTech Academy home"><span class="brand-mark" aria-hidden="true">O<span>.</span></span><span>OpenTech<span class="brand-light"> Academy</span></span></a>
       <button class="menu-toggle" aria-expanded="false" aria-controls="site-nav" aria-label="Open navigation"><span></span><span></span></button>
-      <nav id="site-nav" class="site-nav" aria-label="Main navigation"><a href="#about">What we do</a><a href="#courses">Courses</a><a href="#how-learning-works">How learning works</a><a class="nav-cta" href="#courses">Explore courses <span>↗</span></a></nav>
+      <nav id="site-nav" class="site-nav" aria-label="Main navigation">
+        <a href="#courses">Explore courses</a>
+        <a href="#categories">Course areas</a>
+        <a href="#about">About OpenTech</a>
+        <a class="nav-cta" href="#courses">Start learning <span>→</span></a>
+      </nav>
     </header>
 
     <main id="main">
-      <section class="company-hero page-wrap" id="about">
-        <div class="company-copy">
-          <div class="eyebrow"><span class="live-dot"></span> PRACTICAL COMPUTER EDUCATION</div>
-          <h1>Learn the systems<br /><span>behind everything.</span></h1>
-          <p class="hero-lede">OpenComp Academy turns complex computer topics into clear, connected learning paths. Understand how technology works, build real skills, and learn to run and secure the systems people rely on.</p>
-          <div class="hero-actions"><a class="button button-dark" href="#courses">Explore the courses <span>→</span></a><a class="text-link" href="#how-learning-works">How we teach <span>↓</span></a></div>
-          <div class="company-promise"><span>01</span><p><strong>Learn by understanding.</strong> Practice with a curated mix of lessons, labs, videos, and reading.</p></div>
+      <section class="market-hero" id="about">
+        <div class="market-hero-inner page-wrap">
+          <div class="market-hero-copy">
+            <div class="market-kicker"><span class="live-dot"></span> PRACTICAL COMPUTER EDUCATION</div>
+            <h1>Learn tech skills.<br /><span>Put them to work.</span></h1>
+            <p>Explore clear, self-paced courses that help you understand the systems behind software—from security and cloud to deployment and reliability.</p>
+            <form class="hero-search" id="hero-course-search" role="search">
+              <label class="visually-hidden" for="hero-search-input">What do you want to learn?</label>
+              <span class="search-symbol" aria-hidden="true">⌕</span>
+              <input id="hero-search-input" type="search" placeholder="What do you want to learn?" autocomplete="off" />
+              <button type="submit">Search courses <span aria-hidden="true">→</span></button>
+            </form>
+            <div class="popular-searches"><span>POPULAR:</span><button type="button" data-filter="security">Security</button><button type="button" data-filter="cloud">Cloud</button><button type="button" data-filter="linux">Linux</button><button type="button" data-filter="devops">DevOps</button></div>
+            <div class="hero-trust-row"><span><b>01</b> Learn at your pace</span><span><b>02</b> Practice in the course</span><span><b>03</b> Build useful foundations</span></div>
+          </div>
+          <div class="market-hero-art" aria-label="A learning map for computer systems">
+            <div class="art-heading"><span>YOUR COMPUTER SKILLS MAP</span><span class="art-online"><i></i> 5 LEARNING PATHS</span></div>
+            <div class="skill-map-lines" aria-hidden="true"><i></i><i></i><i></i><i></i></div>
+            <div class="skill-map-center"><span>OPENTECH<br />LEARNING</span><b>✳</b></div>
+            <div class="skill-map-node map-security"><span>◇</span><small>PROTECT</small><b>Security</b></div>
+            <div class="skill-map-node map-cloud"><span>☁</span><small>BUILD</small><b>Cloud</b></div>
+            <div class="skill-map-node map-sre"><span>◉</span><small>OPERATE</small><b>Reliability</b></div>
+            <div class="skill-map-node map-devops"><span>⌘</span><small>DELIVER</small><b>DevOps</b></div>
+            <div class="art-caption"><span>START WITH THE BASICS</span><span>GROW ONE SKILL AT A TIME ↗</span></div>
+          </div>
         </div>
-        <div class="company-art" aria-label="A map connecting computer systems, cloud platforms, reliability, and security">
-          <div class="art-topline"><span>THE COMPUTER SYSTEMS MAP</span><span class="art-status"><i></i> CONNECTED SKILLS</span></div>
-          <svg class="map-lines" viewBox="0 0 520 430" role="img" aria-label="Connected learning areas"><path d="M90 312 190 240 284 285 375 183 450 118M190 240 170 112M284 285 320 372M375 183 310 88M90 312 68 188" /></svg>
-          <div class="map-node node-linux"><span class="node-icon">⌘</span><span>Computer systems</span><small>FOUNDATIONS</small></div>
-          <div class="map-node node-network"><span class="node-icon">↔</span><span>Cloud platforms</span><small>BUILD &amp; DEPLOY</small></div>
-          <div class="map-node node-web"><span class="node-icon">⌁</span><span>Security</span><small>PROTECT</small></div>
-          <div class="map-node node-cloud"><span class="node-icon">☁</span><span>Site reliability</span><small>OPERATE</small></div>
-          <div class="map-node node-detect"><span class="node-icon">◉</span><span>DevOps</span><small>SHIP WITH CONFIDENCE</small></div>
-          <div class="map-center"><span>COMPUTING<br />SKILLS</span><b>✳</b></div>
-          <div class="art-foot"><span>START WITH THE BASICS</span><span>BUILD TOWARD YOUR GOALS <b>↗</b></span></div>
-        </div>
-        <div class="hero-bottom"><span>FROM FOUNDATIONS TO PRODUCTION SYSTEMS</span><span>OPENCOMP ACADEMY &nbsp; / &nbsp; LEARN IN THE OPEN</span></div>
       </section>
 
-      <section class="what-we-do">
-        <div class="page-wrap what-grid"><div><div class="eyebrow">WHAT WE DO</div><h2>We make computer<br />education make sense.</h2></div><div class="what-copy"><p>Learning technology can feel like collecting disconnected tutorials. We connect the ideas into structured courses that explain what to learn, why it matters, and how to use it in practice.</p><div class="what-points"><span><b>01</b> Clear learning paths</span><span><b>02</b> Curated resources</span><span><b>03</b> Practical projects</span></div></div></div>
-      </section>
-
-      <section class="program-section catalog-section" id="courses">
+      <section class="category-band" id="categories" aria-labelledby="category-title">
         <div class="page-wrap">
-          <div class="section-heading"><div><div class="eyebrow">THE COURSE CATALOG</div><h2>Build your computer skills.</h2></div><p>Start with the course that fits your goal. Explore its curriculum, see what you’ll build, and learn how course completion and certification work.</p></div>
-          <div class="catalog-tools"><label for="course-search">Find a course</label><input id="course-search" type="search" placeholder="Search security, cloud, SRE…" autocomplete="off" /><span id="course-count" aria-live="polite">5 courses</span></div>
-          <div class="course-catalog" id="course-catalog">
-            <a class="catalog-card catalog-featured" href="/courses/security-engineering/" data-course="security cybersecurity security 101 application protection threat model">
-              <div class="catalog-card-head"><span class="program-number">COMPUTER SYSTEMS / 01</span><span class="card-arrow">↗</span></div><span class="catalog-icon">◇</span><h3>Security 101</h3><p>Build a breadth-first map of security: risk, systems, identity, software, and response.</p><div class="catalog-tags"><span>Security foundations</span><span>Application basics</span><span>Defense</span></div><div class="catalog-card-foot"><span>BEGINNER · 4–6 HOURS</span><b>View course <i>→</i></b></div>
+          <div class="category-heading"><div><div class="eyebrow">FIND YOUR STARTING POINT</div><h2 id="category-title">Explore computer course areas</h2></div><button type="button" class="category-all" data-filter="">View all courses <span>→</span></button></div>
+          <div class="category-grid">
+            <button class="category-tile category-security" type="button" data-filter="security"><span class="category-glyph">◇</span><span><strong>Cybersecurity</strong><small>Protect software and systems</small></span><b>↗</b></button>
+            <button class="category-tile category-cloud" type="button" data-filter="cloud"><span class="category-glyph">☁</span><span><strong>Cloud &amp; infrastructure</strong><small>Build and operate platforms</small></span><b>↗</b></button>
+            <button class="category-tile category-reliability" type="button" data-filter="reliability"><span class="category-glyph">◉</span><span><strong>Reliability engineering</strong><small>Keep services dependable</small></span><b>↗</b></button>
+            <button class="category-tile category-delivery" type="button" data-filter="devops"><span class="category-glyph">⌘</span><span><strong>DevOps &amp; delivery</strong><small>Ship software with confidence</small></span><b>↗</b></button>
+            <button class="category-tile category-foundations" type="button" data-filter="computer systems"><span class="category-glyph">⌂</span><span><strong>Computer foundations</strong><small>Understand how computers work</small></span><b>↗</b></button>
+          </div>
+        </div>
+      </section>
+
+      <section class="market-courses" id="courses" aria-labelledby="courses-title">
+        <div class="page-wrap">
+          <div class="market-section-heading">
+            <div><div class="eyebrow">OPENTECH COURSE CATALOG</div><h2 id="courses-title">Find a course for what’s next.</h2><p>Explore the outline first, then choose a learning path that fits your goal.</p></div>
+            <div class="catalog-counter" id="course-count" aria-live="polite">5 courses</div>
+          </div>
+          <div class="catalog-tools marketplace-tools"><label class="visually-hidden" for="course-search">Search computer courses</label><span aria-hidden="true">⌕</span><input id="course-search" type="search" placeholder="Search security, cloud, Linux, SRE…" autocomplete="off" /><button type="button" id="clear-search">Clear</button></div>
+          <div class="active-filters" id="active-filters" hidden><span id="filter-label"></span><button type="button" data-filter="">Clear filter ×</button></div>
+          <div class="course-catalog marketplace-catalog" id="course-catalog">
+            <a class="course-tile catalog-card featured-course" href="/courses/security-engineering/" data-course="security cybersecurity security 101 application protection risk incident defense">
+              <div class="course-art course-art-security"><span>OPENTECH / SECURITY</span><div class="art-shield">◇</div><i class="art-orbit orbit-one"></i><i class="art-orbit orbit-two"></i><b>101</b></div>
+              <div class="course-tile-content"><div class="course-category-label">SECURITY FOUNDATIONS</div><h3>Security 101</h3><p>A breadth-first introduction to risk, systems, identity, application security, and response.</p><div class="course-meta"><span>BEGINNER</span><span>4–6 HOURS</span></div><div class="course-tile-footer"><span>Explore course</span><b>→</b></div></div>
             </a>
-            <a class="catalog-card" href="/courses/cloud-engineering/" data-course="cloud aws infrastructure platform networking">
-              <div class="catalog-card-head"><span class="program-number">COMPUTER SYSTEMS / 02</span><span class="card-arrow">↗</span></div><span class="catalog-icon">☁</span><h3>Cloud Engineering</h3><p>Build a strong understanding of cloud services, architecture, networking, and operations.</p><div class="catalog-tags"><span>Cloud foundations</span><span>Architecture</span><span>Operations</span></div><div class="catalog-card-foot"><span>FOUNDATIONS → PRACTICE</span><b>View course <i>→</i></b></div>
+            <a class="course-tile catalog-card" href="/courses/cloud-engineering/" data-course="cloud aws infrastructure platform networking engineering">
+              <div class="course-art course-art-cloud"><span>OPENTECH / CLOUD</span><div class="cloud-orbit">☁</div><i></i><i></i><b>BUILD</b></div>
+              <div class="course-tile-content"><div class="course-category-label">CLOUD &amp; INFRASTRUCTURE</div><h3>Cloud Engineering</h3><p>Understand cloud services, architecture, networking, identity, and operations.</p><div class="course-meta"><span>FOUNDATIONS → PRACTICE</span><span>COURSE OUTLINE</span></div><div class="course-tile-footer"><span>Explore course</span><b>→</b></div></div>
             </a>
-            <a class="catalog-card" href="/courses/site-reliability-engineering/" data-course="site reliability sre observability incident systems">
-              <div class="catalog-card-head"><span class="program-number">COMPUTER SYSTEMS / 03</span><span class="card-arrow">↗</span></div><span class="catalog-icon">◉</span><h3>Site Reliability Engineering</h3><p>Operate dependable services with observability, automation, incident response, and SLOs.</p><div class="catalog-tags"><span>Reliability</span><span>Monitoring</span><span>Automation</span></div><div class="catalog-card-foot"><span>FOUNDATIONS → PRACTICE</span><b>View course <i>→</i></b></div>
+            <a class="course-tile catalog-card" href="/courses/site-reliability-engineering/" data-course="site reliability sre observability incident systems operations">
+              <div class="course-art course-art-reliability"><span>OPENTECH / RELIABILITY</span><div class="pulse-line"><i></i></div><div class="pulse-core">◉</div><b>AVAILABLE</b></div>
+              <div class="course-tile-content"><div class="course-category-label">RELIABILITY ENGINEERING</div><h3>Site Reliability Engineering</h3><p>Operate dependable services with observability, automation, and SLOs.</p><div class="course-meta"><span>FOUNDATIONS → PRACTICE</span><span>COURSE OUTLINE</span></div><div class="course-tile-footer"><span>Explore course</span><b>→</b></div></div>
             </a>
-            <a class="catalog-card" href="/courses/devops-deployment/" data-course="devops deployment ci cd containers automation release">
-              <div class="catalog-card-head"><span class="program-number">COMPUTER SYSTEMS / 04</span><span class="card-arrow">↗</span></div><span class="catalog-icon">⌘</span><h3>DevOps &amp; Deployment</h3><p>Move from source code to reliable releases with version control, CI/CD, containers, and infrastructure as code.</p><div class="catalog-tags"><span>Git</span><span>CI/CD</span><span>Containers</span></div><div class="catalog-card-foot"><span>FOUNDATIONS → PRACTICE</span><b>View course <i>→</i></b></div>
+            <a class="course-tile catalog-card" href="/courses/devops-deployment/" data-course="devops deployment ci cd containers automation release">
+              <div class="course-art course-art-delivery"><span>OPENTECH / DELIVERY</span><div class="pipeline"><i></i><i></i><i></i><i></i></div><b>CODE → SHIP</b></div>
+              <div class="course-tile-content"><div class="course-category-label">DEVOPS &amp; DELIVERY</div><h3>DevOps &amp; Deployment</h3><p>Move from source code to reliable releases with CI/CD, containers, and infrastructure as code.</p><div class="course-meta"><span>FOUNDATIONS → PRACTICE</span><span>COURSE OUTLINE</span></div><div class="course-tile-footer"><span>Explore course</span><b>→</b></div></div>
             </a>
-            <a class="catalog-card" href="/courses/computer-systems-foundations/" data-course="computer systems linux operating systems networking programming basics">
-              <div class="catalog-card-head"><span class="program-number">COMPUTER SYSTEMS / 05</span><span class="card-arrow">↗</span></div><span class="catalog-icon">⌂</span><h3>Computer Systems Foundations</h3><p>Start from the beginning: learn how computers, operating systems, networks, and programs fit together.</p><div class="catalog-tags"><span>Beginner</span><span>Linux</span><span>Networking</span></div><div class="catalog-card-foot"><span>NO EXPERIENCE NEEDED</span><b>View course <i>→</i></b></div>
+            <a class="course-tile catalog-card" href="/courses/computer-systems-foundations/" data-course="computer systems linux operating systems networking programming basics foundations">
+              <div class="course-art course-art-systems"><span>OPENTECH / SYSTEMS</span><div class="system-grid"><i>CPU</i><i>RAM</i><i>NET</i><i>OS</i></div><b>FOUNDATIONS</b></div>
+              <div class="course-tile-content"><div class="course-category-label">COMPUTER FOUNDATIONS</div><h3>Computer Systems Foundations</h3><p>Learn how computers, operating systems, networks, and programs fit together.</p><div class="course-meta"><span>BEGINNER</span><span>NO EXPERIENCE NEEDED</span></div><div class="course-tile-footer"><span>Explore course</span><b>→</b></div></div>
             </a>
           </div>
-          <p class="catalog-empty" id="catalog-empty" hidden>No courses match that search. Try another topic.</p>
+          <p class="catalog-empty" id="catalog-empty" hidden>No courses match that search. Try another topic or clear the filter.</p>
         </div>
       </section>
 
-      <section class="approach page-wrap" id="how-learning-works">
-        <div class="approach-intro"><div class="eyebrow">HOW LEARNING WORKS</div><h2>Curated, connected,<br />and practical.</h2><p>We bring quality public learning resources together with context, practice, and clear progress—so learners spend more time learning and less time figuring out where to begin.</p></div>
-        <div class="approach-steps"><article><span class="step-count">01</span><div><h3>Follow a clear curriculum</h3><p>Each course shows prerequisites, learning goals, modules, and what you’ll be able to do.</p></div><span class="step-symbol">◎</span></article><article><span class="step-count">02</span><div><h3>Learn from good sources</h3><p>Lessons curate selected documentation, articles, videos, and labs with attribution.</p></div><span class="step-symbol">⌁</span></article><article><span class="step-count">03</span><div><h3>Practice and show your work</h3><p>Exercises and projects turn ideas into skills. A course completion certificate is available for a separate fee.</p></div><span class="step-symbol">↗</span></article></div>
+      <section class="learning-promise" id="how-learning-works">
+        <div class="page-wrap promise-layout">
+          <div class="promise-intro"><div class="eyebrow">LEARN WITH OPENTECH</div><h2>Clear paths.<br /><span>Useful practice.</span></h2><p>We bring computer topics together in a sensible order, explain why they matter, and help you practice without hunting for your next step.</p><a class="promise-link" href="/courses/security-engineering/">See how Security 101 works <b>→</b></a></div>
+          <div class="promise-steps">
+            <article><span>01</span><div><h3>Choose a learning path</h3><p>See the audience, outcomes, curriculum, and estimated effort before you begin.</p></div><b>◎</b></article>
+            <article><span>02</span><div><h3>Learn one idea at a time</h3><p>Use focused lessons with notes, embedded media, knowledge checks, and clear progress.</p></div><b>⌁</b></article>
+            <article><span>03</span><div><h3>Practice inside the course</h3><p>Apply concepts in guided activities and keep your learning organized in one place.</p></div><b>↗</b></article>
+            <a class="promise-link" href="/curriculum/">Explore the videos, readings &amp; PDFs for all five courses <b>→</b></a>
+          </div>
+        </div>
       </section>
 
-      <section class="company-cta"><div class="page-wrap company-cta-inner"><div><div class="eyebrow">MAKE YOUR NEXT MOVE</div><h2>Choose what you want<br />to understand next.</h2></div><a class="button button-light" href="#courses">Browse all courses <span>↗</span></a></div></section>
+      <section class="market-bottom-cta"><div class="page-wrap bottom-cta-inner"><div><div class="eyebrow">YOUR NEXT SKILL STARTS HERE</div><h2>What do you want to understand?</h2></div><a class="button button-light" href="#courses">Explore all courses <span>→</span></a></div></section>
     </main>
-
-    <footer class="site-footer"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">O<span>.</span></span><span>OpenComp<span class="brand-light"> Academy</span></span></a><p>Understand computers. Build what’s next.</p><div><a href="#courses">Courses</a><a href="https://github.com/mafiaguy/open-academy/blob/main/CONTRIBUTING.md">Contribute</a><a href="https://github.com/mafiaguy/open-academy">GitHub ↗</a></div><small>© 2026 OpenComp Academy · Practical learning for the systems-minded.</small></footer>
-    <script src="/app.js" defer></script><script src="/catalog.js" defer></script>
+    <footer class="site-footer marketplace-footer"><a class="brand" href="/"><span class="brand-mark" aria-hidden="true">O<span>.</span></span><span>OpenTech<span class="brand-light"> Academy</span></span></a><p>Understand computers. Build what’s next.</p><div><a href="#courses">Courses</a><a href="#about">About</a><a href="https://github.com/mafiaguy/open-academy/blob/main/CONTRIBUTING.md">Contribute</a></div><small>© 2026 OpenTech Academy · Practical learning for the systems-minded.</small></footer>
+    <script src="/app.js" defer></script>
+    <script src="/catalog.js" defer></script>
   </body>
 </html>

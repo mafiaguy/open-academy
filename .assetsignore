@@ -1,0 +1,14 @@
+# Keep project and development files out of public deployment assets.
+/.git
+/.github
+/docs
+/curriculum/research-and-resources.md
+/curriculum/templates
+/scripts
+/README.md
+/CONTRIBUTING.md
+/CODE_OF_CONDUCT.md
+/grants.json
+/wrangler.jsonc
+/.dev.vars.example
+/courses/COURSE_TEMPLATE.md

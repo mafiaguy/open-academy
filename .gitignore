@@ -1,3 +1,10 @@
 *.pem
 *.private-key.pem
 .env
+.env.*
+!.env.example
+.dev.vars
+!.dev.vars.example
+node_modules/
+dist/
+convex/_generated/
