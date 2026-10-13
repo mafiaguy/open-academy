@@ -8,15 +8,21 @@ import authConfig from './auth.config';
 
 export const authComponent = createClient<DataModel>(components.betterAuth);
 
+const siteUrl = process.env.SITE_URL!;
+const trustedOrigins = (process.env.TRUSTED_ORIGINS ?? '')
+  .split(',')
+  .map((origin) => origin.trim())
+  .filter(Boolean);
+
 export const createAuth = (ctx: GenericCtx<DataModel>) => betterAuth({
   baseURL: process.env.CONVEX_SITE_URL,
-  trustedOrigins: [process.env.SITE_URL!],
+  trustedOrigins,
   database: authComponent.adapter(ctx),
   emailAndPassword: {
     enabled: true,
     requireEmailVerification: false,
   },
-  plugins: [crossDomain({ siteUrl: process.env.SITE_URL! }), convex({ authConfig })],
+  plugins: [crossDomain({ siteUrl }), convex({ authConfig })],
 });
 
 export const getCurrentUser = query({
