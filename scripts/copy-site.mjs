@@ -4,7 +4,7 @@ const siteRoot = new URL('../', import.meta.url);
 const outputRoot = new URL('../dist/', import.meta.url);
 const rootFiles = [
   '404.html', '_headers', 'app.js', 'auth-client.js', 'brand.css', 'catalog.js',
-  'favicon.svg', 'index.html', 'login.js', 'lms.css', 'marketplace.css', 'robots.txt', 'sitemap.xml', 'styles.css',
+  'favicon.svg', 'index.html', 'login.js', 'lms.css', 'lms.js', 'marketplace.css', 'robots.txt', 'sitemap.xml', 'styles.css',
 ];
 const siteDirectories = ['courses', 'curriculum', 'lms', 'programs'];
 
