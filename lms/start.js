@@ -6,6 +6,7 @@ const availableCourses = new Set([
   'cloud-engineering',
   'site-reliability-engineering',
   'devops-deployment',
+  'codeql-security',
 ]);
 
 const courseSlug = new URLSearchParams(window.location.search).get('course');
@@ -46,10 +47,18 @@ function authErrorMessage(error) {
 
 async function redirectIfSignedIn(coursePath) {
   if (!authIsConfigured) {
-    setupMessage.innerHTML = '<strong>Sign-in setup is incomplete.</strong> The course preview is not a real account login.';
-    setAuthMessage('Authentication is not configured for this site yet.', true);
-    signInForm.querySelector('button[type="submit"]').disabled = true;
-    signUpForm.querySelector('button[type="submit"]').disabled = true;
+    signInForm.hidden = true;
+    signUpForm.hidden = true;
+    signInModeButton.hidden = true;
+    signUpModeButton.hidden = true;
+    setupMessage.replaceChildren();
+    const status = document.createElement('strong');
+    status.textContent = 'Sign-in is not configured.';
+    const previewLink = document.createElement('a');
+    previewLink.className = 'button button-dark';
+    previewLink.href = `/lms/${courseSlug}/`;
+    previewLink.textContent = 'Open course preview →';
+    setupMessage.append(status, document.createTextNode(' You can still explore the lessons. Progress stays in this browser. '), previewLink);
     return;
   }
   try {
@@ -114,9 +123,17 @@ async function loadStartPage() {
     if (!response.ok) throw new Error('Course details are unavailable.');
     const course = await response.json();
     const lessonCount = course.units.reduce((total, unit) => total + unit.lessons.length, 0);
+    const resourceKinds = new Set(
+      course.units.flatMap((unit) => unit.lessons.flatMap((lesson) => (lesson.resources || []).map((resource) => resource.kind))),
+    );
+    const resourceSummary = [
+      resourceKinds.has('video') ? 'videos' : '',
+      resourceKinds.has('reading') ? 'readings' : '',
+      resourceKinds.has('pdf') ? 'PDFs' : '',
+    ].filter(Boolean).join(', ');
     label.textContent = `${course.title} · COURSE PREVIEW`;
     title.textContent = `Start ${course.title}.`;
-    description.textContent = `${lessonCount} guided lessons with curated videos, readings, PDFs, and practice. Your progress stays in this browser.`;
+    description.textContent = `${lessonCount} guided lessons with curated ${resourceSummary || 'lesson materials'} and practice. Your progress stays in this browser.`;
     await redirectIfSignedIn(`/lms/${courseSlug}/`);
   } catch (error) {
     console.error('Could not initialize the course sign-in page.', error);

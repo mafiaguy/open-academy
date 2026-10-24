@@ -1,0 +1,938 @@
+{
+  "slug": "codeql-security",
+  "title": "CodeQL: From Query to Finding",
+  "subtitle": "Learn how CodeQL models code, traces security-relevant behavior, and helps teams investigate findings.",
+  "summary": "A guided introduction to CodeQL databases, QL query structure, data flow, query testing, and code-scanning triage. Browser activities teach evidence-based decisions; real query execution is a separate local practical.",
+  "duration": "12–15 guided hours",
+  "pace": "3–4 weeks at 3–4 hours per week, or at your own pace",
+  "level": "Beginner to intermediate · basic programming familiarity recommended",
+  "audience": "Developers, application security learners, security researchers, and engineers who want to understand static code analysis.",
+  "scope": "This course teaches CodeQL concepts and a disciplined analysis workflow. It does not run CodeQL in the browser, certify query expertise, or prove a repository is vulnerability-free. Supported languages and CLI behavior change; use current official documentation for setup.",
+  "completion": "Complete all 18 lessons, pass each knowledge check, finish each evidence scenario, and submit the capstone investigation note. Learning is free; any optional certificate fee must be disclosed before purchase.",
+  "units": [
+    {
+      "title": "01 · CodeQL foundations",
+      "description": "Understand the analysis model and what results do and do not prove.",
+      "lessons": [
+        {
+          "title": "CodeQL: code as a database",
+          "duration": "45 min",
+          "summary": "Explain how CodeQL turns a source revision into a database that can be queried.",
+          "notes": [
+            "CodeQL is a semantic analysis technology: it extracts facts about a codebase, stores them in a language-specific database, and evaluates queries against those facts. This makes structural and behavioral patterns searchable across a repository.",
+            "A database represents one analyzed source revision and extraction configuration. It is not a live copy of the running application, and results can be incomplete when generated code, dependencies, or build steps are missed.",
+            "A useful result is evidence for investigation. It does not automatically establish exploitability, business impact, or the absence of other defects. Keep the repository, revision, language, and extraction method attached to every conclusion."
+          ],
+          "quiz": {
+            "question": "What does a CodeQL database primarily contain?",
+            "options": [
+              "Facts extracted from one source revision for static queries",
+              "A live copy of the running application",
+              "A list of all runtime requests"
+            ],
+            "answer": 0,
+            "explanation": "The database captures analyzed source facts for a specific revision and extraction."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A scan misses a generated source directory. What should you verify before interpreting the result?",
+            "options": [
+              "Whether the query severity is high enough",
+              "Whether the application had a production incident",
+              "Whether that directory was included in extraction and belongs in the intended scope"
+            ],
+            "answer": 2,
+            "explanation": "Check coverage and extraction first; a query cannot find code absent from the database."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "About CodeQL",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-overview/about-codeql/",
+              "summary": "Official overview of extraction, databases, queries, and results."
+            },
+            {
+              "kind": "video",
+              "title": "Finding security vulnerabilities in JavaScript with CodeQL",
+              "provider": "GitHub Satellite · historical talk",
+              "url": "https://www.youtube.com/watch?v=pYzfGaLTqC0",
+              "embed": "https://www.youtube-nocookie.com/embed/pYzfGaLTqC0",
+              "summary": "A historical GitHub talk showing CodeQL investigation ideas; consult current documentation for present-day CLI and API details."
+            }
+          ]
+        },
+        {
+          "title": "Queries, alerts, and paths",
+          "duration": "40 min",
+          "summary": "Distinguish query output from the security conclusion a team must make.",
+          "notes": [
+            "A query expresses a pattern over the database. A result may identify a source location, a value, a related location, or a path through code. The query author chooses which facts matter and what is reported.",
+            "An alert is a tool-managed finding produced through a scanning workflow. It includes rule metadata and repository context, but still requires validation against the code and application behavior.",
+            "A path is an explanation of how a value may travel between modeled program points. It is valuable evidence, not a runtime trace: the path depends on the analysis model, approximations, and code that was extracted."
+          ],
+          "quiz": {
+            "question": "What does a CodeQL path visualization represent?",
+            "options": [
+              "A recorded production request",
+              "A guarantee of exploitability",
+              "A modeled static flow explanation"
+            ],
+            "answer": 2,
+            "explanation": "A path explains modeled static-analysis relationships; it is not a runtime trace."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A path ends at a sensitive operation. What evidence should you collect next?",
+            "options": [
+              "A screenshot of the path with no code context",
+              "The surrounding code, reachability, and any validation or authorization",
+              "Only the alert title"
+            ],
+            "answer": 1,
+            "explanation": "Validate the path against the actual source and controls."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "About CodeQL",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-overview/about-codeql/",
+              "summary": "Official overview of extraction, databases, queries, and results."
+            },
+            {
+              "kind": "video",
+              "title": "Finding security vulnerabilities in JavaScript with CodeQL",
+              "provider": "GitHub Satellite · historical talk",
+              "url": "https://www.youtube.com/watch?v=pYzfGaLTqC0",
+              "embed": "https://www.youtube-nocookie.com/embed/pYzfGaLTqC0",
+              "summary": "A historical GitHub talk showing CodeQL investigation ideas; consult current documentation for present-day CLI and API details."
+            }
+          ]
+        },
+        {
+          "title": "Choose the right CodeQL workflow",
+          "duration": "40 min",
+          "summary": "Select a starting workflow for exploration, custom queries, or repository scanning.",
+          "notes": [
+            "The CodeQL CLI supports database creation, query evaluation, and query testing. GitHub code scanning can run maintained query suites and present results alongside repository alerts. These workflows share the analysis engine but serve different jobs.",
+            "Use a starter workspace when learning query authoring, the CLI when you need controlled local experiments, and code scanning when a repository needs repeatable analysis and alert triage. Confirm current tool requirements before setup.",
+            "Before scanning, identify the repository, languages, default branch, build requirements, and where findings will be reviewed. Workflow configuration determines coverage as much as the query itself."
+          ],
+          "quiz": {
+            "question": "Which workflow best fits repeatable repository alerts in a pull request?",
+            "options": [
+              "A database created once and never refreshed",
+              "Code scanning configured for the repository",
+              "An ad hoc query in a developer’s editor only"
+            ],
+            "answer": 1,
+            "explanation": "Repository code scanning can run configured analysis repeatedly and surface alerts in review workflows."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A team wants to explore one custom query before enabling repository scanning. Which is the best first step?",
+            "options": [
+              "Use a local CLI or starter workspace against a controlled checkout",
+              "Change the production workflow immediately",
+              "Treat a sample alert as a complete scan"
+            ],
+            "answer": 0,
+            "explanation": "Start with a controlled experiment, then decide how to operationalize it."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "About CodeQL",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-overview/about-codeql/",
+              "summary": "Official overview of extraction, databases, queries, and results."
+            },
+            {
+              "kind": "video",
+              "title": "Finding security vulnerabilities in JavaScript with CodeQL",
+              "provider": "GitHub Satellite · historical talk",
+              "url": "https://www.youtube.com/watch?v=pYzfGaLTqC0",
+              "embed": "https://www.youtube-nocookie.com/embed/pYzfGaLTqC0",
+              "summary": "A historical GitHub talk showing CodeQL investigation ideas; consult current documentation for present-day CLI and API details."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "02 · Databases and extraction",
+      "description": "Learn how source selection and extraction quality affect analysis.",
+      "lessons": [
+        {
+          "title": "Supported languages and database scope",
+          "duration": "40 min",
+          "summary": "Describe database language and revision boundaries.",
+          "notes": [
+            "CodeQL databases are language-specific and tied to the source that was analyzed. A repository with several languages may need multiple databases and corresponding analysis configuration.",
+            "The supported language and framework matrix changes over time. Check the current official documentation before selecting a project or interpreting an apparent gap.",
+            "A finding from one database says nothing about files, generated code, or languages that were not included. Document the scope before calling a scan complete."
+          ],
+          "quiz": {
+            "question": "A CodeQL database is scoped to what?",
+            "options": [
+              "A language and analyzed source revision/configuration",
+              "Every revision and language in the repository automatically",
+              "The live production process"
+            ],
+            "answer": 0,
+            "explanation": "Databases are language and revision scoped; coverage must be verified."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A repository has two supported languages but only one appears in results. What is the sound conclusion?",
+            "options": [
+              "Assume the other language has no issues",
+              "Assume CodeQL does not support it",
+              "Verify whether both languages were configured and analyzed"
+            ],
+            "answer": 2,
+            "explanation": "An absent language in the analysis is a coverage question, not a clean result."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "CodeQL CLI: getting started",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/getting-started-with-the-codeql-cli/",
+              "summary": "Official CLI overview and workflow."
+            },
+            {
+              "kind": "reading",
+              "title": "Creating CodeQL databases",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/",
+              "summary": "Database creation modes and extraction considerations."
+            }
+          ]
+        },
+        {
+          "title": "Create a database with the CLI",
+          "duration": "50 min",
+          "summary": "Follow the create, analyze, and interpret stages of a local CLI workflow.",
+          "notes": [
+            "A typical CLI workflow creates a database from a checkout, runs one or more queries against that database, then interprets the result files. Build mode and language options determine how source is extracted.",
+            "For compiled languages, extraction may need a successful build. For other languages, the extractor can often work directly from source. Use the current CLI documentation for exact commands and version-specific flags.",
+            "A failed or partial extraction is not a clean scan. Read diagnostics, verify the analyzed paths, and keep the database associated with the exact checkout and commit."
+          ],
+          "quiz": {
+            "question": "What is a typical local CLI sequence?",
+            "options": [
+              "Publish alerts, then create source code",
+              "Run a query without a database",
+              "Create a database, run queries, inspect results"
+            ],
+            "answer": 2,
+            "explanation": "The workflow creates an analysis database before evaluating queries and interpreting results."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A database command completed, but the expected project target did not build. What now?",
+            "options": [
+              "Ignore the skipped target",
+              "Review diagnostics and verify which files were extracted",
+              "Mark the scan clean"
+            ],
+            "answer": 1,
+            "explanation": "A successful command does not prove complete intended extraction."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "CodeQL CLI: getting started",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/getting-started-with-the-codeql-cli/",
+              "summary": "Official CLI overview and workflow."
+            },
+            {
+              "kind": "reading",
+              "title": "Creating CodeQL databases",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/",
+              "summary": "Database creation modes and extraction considerations."
+            }
+          ]
+        },
+        {
+          "title": "Build modes and extraction coverage",
+          "duration": "45 min",
+          "summary": "Recognize how build configuration and generated code influence coverage.",
+          "notes": [
+            "Build modes may trace an explicit build, use an autobuild strategy, or analyze supported source without building. The right choice depends on language, repository structure, and CI environment.",
+            "A successful command is only one signal. Confirm that the expected source files were extracted and review build logs for skipped targets, missing dependencies, or generated-source gaps.",
+            "When a result seems absent, ask first whether the relevant file and framework were represented in the database. Query logic cannot recover facts that extraction never recorded."
+          ],
+          "quiz": {
+            "question": "Why do build modes matter to CodeQL extraction?",
+            "options": [
+              "They guarantee all generated code is included",
+              "They affect how source code is observed and extracted",
+              "They only change alert colors"
+            ],
+            "answer": 1,
+            "explanation": "Build configuration influences the source facts available to analysis."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A scan log says a build target was skipped. What should the reviewer do?",
+            "options": [
+              "Resolve or document the coverage gap before calling the analysis complete",
+              "Raise the query severity",
+              "Close all alerts"
+            ],
+            "answer": 0,
+            "explanation": "Skipped build work may mean missing source coverage."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "CodeQL CLI: getting started",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/getting-started-with-the-codeql-cli/",
+              "summary": "Official CLI overview and workflow."
+            },
+            {
+              "kind": "reading",
+              "title": "Creating CodeQL databases",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/creating-codeql-databases/",
+              "summary": "Database creation modes and extraction considerations."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "03 · Writing QL queries",
+      "description": "Move from a precise question to a readable query and inspectable result.",
+      "lessons": [
+        {
+          "title": "Read the shape of a QL query",
+          "duration": "45 min",
+          "summary": "Explain the declarative structure of a basic QL query.",
+          "notes": [
+            "QL describes a set of results that satisfy logical constraints. A simple query introduces variables, constrains their possible values, and selects the facts that should appear.",
+            "QL uses types, predicates, classes, and libraries to express relationships. Rather than stepping through instructions, the evaluator finds values that meet the constraints.",
+            "Start with a small question that can be checked by hand. Add one condition at a time, keep names meaningful, and inspect whether the selected result is useful to a reviewer."
+          ],
+          "quiz": {
+            "question": "How does a basic QL query describe results?",
+            "options": [
+              "By constraining possible values and selecting those that satisfy the conditions",
+              "By replaying every program instruction at runtime",
+              "By searching only for exact text strings"
+            ],
+            "answer": 0,
+            "explanation": "QL is declarative: it states logical constraints over program facts."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A query produces too many matches. What is a disciplined next step?",
+            "options": [
+              "Delete every result manually",
+              "Claim all matches are exploitable",
+              "Add one semantic constraint and test it against representative cases"
+            ],
+            "answer": 2,
+            "explanation": "Narrow the question with meaningful constraints and verify the behavior."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Introduction to QL",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/introduction-to-ql/",
+              "summary": "Learn the structure and declarative style of QL."
+            },
+            {
+              "kind": "reading",
+              "title": "QL language reference",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/ql-language-reference/about-the-ql-language/",
+              "summary": "Official reference for QL types, predicates, and expressions."
+            }
+          ]
+        },
+        {
+          "title": "Types, predicates, and libraries",
+          "duration": "50 min",
+          "summary": "Use the standard library to express relationships without duplicating analysis logic.",
+          "notes": [
+            "CodeQL libraries provide reusable abstractions over language syntax and semantics. A query can use classes and predicates to ask about program elements at a useful level rather than matching raw text.",
+            "The best abstraction depends on the language and question. Read library documentation and nearby example queries, then verify that a class or predicate captures the cases you intend.",
+            "Avoid treating a familiar name as a guarantee. Check definitions, examples, and tests so you understand both what the abstraction includes and where it may be incomplete."
+          ],
+          "quiz": {
+            "question": "Why use CodeQL libraries and predicates?",
+            "options": [
+              "They remove the need to test a query",
+              "They guarantee every framework is modeled",
+              "They provide reusable abstractions over language syntax and semantics"
+            ],
+            "answer": 2,
+            "explanation": "Libraries let query authors express questions using reusable language-aware concepts."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A library class name seems relevant. Before relying on it, what should you do?",
+            "options": [
+              "Use it without a fixture",
+              "Read its definition, documentation, and examples to check its scope",
+              "Assume the name guarantees the intended behavior"
+            ],
+            "answer": 1,
+            "explanation": "Verify what the abstraction includes and where it may be incomplete."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Introduction to QL",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/introduction-to-ql/",
+              "summary": "Learn the structure and declarative style of QL."
+            },
+            {
+              "kind": "reading",
+              "title": "QL language reference",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/ql-language-reference/about-the-ql-language/",
+              "summary": "Official reference for QL types, predicates, and expressions."
+            }
+          ]
+        },
+        {
+          "title": "Query syntax trees and source locations",
+          "duration": "45 min",
+          "summary": "Relate syntax nodes to the source code that a finding should identify.",
+          "notes": [
+            "An abstract syntax tree represents program structure: expressions, statements, declarations, and their relationships. Queries can match nodes and report source locations that point reviewers to relevant code.",
+            "AST-based reasoning is more robust than searching for a token because equivalent behavior can use different formatting or identifiers. However, syntax alone may not establish data origin or security impact.",
+            "For every result, ask whether its location is actionable. A broad node can generate confusing highlights; a narrow location may hide the surrounding context needed to understand the issue."
+          ],
+          "quiz": {
+            "question": "What does an abstract syntax tree represent?",
+            "options": [
+              "A list of deployed servers",
+              "The structured syntax of a program",
+              "A chronological runtime trace"
+            ],
+            "answer": 1,
+            "explanation": "An AST represents program constructs and their relationships."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A query highlights an entire file for one small issue. How can the result be improved?",
+            "options": [
+              "Report a precise, actionable source location with enough surrounding context",
+              "Remove all locations",
+              "Increase the severity"
+            ],
+            "answer": 0,
+            "explanation": "A focused location helps the reviewer understand the matched code."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Introduction to QL",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/introduction-to-ql/",
+              "summary": "Learn the structure and declarative style of QL."
+            },
+            {
+              "kind": "reading",
+              "title": "QL language reference",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/ql-language-reference/about-the-ql-language/",
+              "summary": "Official reference for QL types, predicates, and expressions."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "04 · Data flow and security",
+      "description": "Model how untrusted values move and where defenses matter.",
+      "lessons": [
+        {
+          "title": "Local and global data flow",
+          "duration": "50 min",
+          "summary": "Compare flow within a function with flow across program boundaries.",
+          "notes": [
+            "Local data flow follows values through a limited scope, usually within a callable unit. It is often easier to understand and can be a good first model for a focused question.",
+            "Global data flow can connect values across calls and program components. It can reveal longer paths, but tends to require more modeling and may be more expensive or approximate.",
+            "Choose the narrowest analysis that answers the security question. Wider reach is not automatically better if the path becomes noisy or difficult to validate."
+          ],
+          "quiz": {
+            "question": "When is local data flow often a good starting point?",
+            "options": [
+              "When the question concerns value movement within a limited scope",
+              "When a value must be followed across every service",
+              "When extraction has failed"
+            ],
+            "answer": 0,
+            "explanation": "Local flow is often easier to reason about for a focused within-scope question."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A local query does not connect a value across a call boundary. What is a reasonable next step?",
+            "options": [
+              "Assume the value cannot cross the call",
+              "Remove the source",
+              "Consider whether global flow is needed and model/test it carefully"
+            ],
+            "answer": 2,
+            "explanation": "Use broader flow only when the security question requires it."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Analyzing data flow in JavaScript and TypeScript",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-language-guides/analyzing-data-flow-in-javascript-and-typescript/",
+              "summary": "Language-specific data-flow guidance and examples."
+            },
+            {
+              "kind": "reading",
+              "title": "Creating path queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/creating-path-queries/",
+              "summary": "How to construct path queries that explain flow."
+            }
+          ]
+        },
+        {
+          "title": "Sources, sinks, and barriers",
+          "duration": "50 min",
+          "summary": "Identify the key elements in a taint-tracking security question.",
+          "notes": [
+            "A source marks data with a security-relevant origin, such as user-controlled input. A sink marks an operation where that data could cause harm, such as constructing a database query or command.",
+            "A barrier represents a transformation or validation that may make a value safe for a particular sink. The safety condition is context-specific: escaping for HTML does not automatically make a value safe for SQL.",
+            "The quality of a flow query depends on its model. Missing sources hide cases; missing sinks reduce coverage; incorrect barriers suppress valid findings. Treat each as a claim that should be supported with examples."
+          ],
+          "quiz": {
+            "question": "Why is a barrier specific to a sink context?",
+            "options": [
+              "Every sanitizer makes data safe everywhere",
+              "Barriers only control query speed",
+              "A transformation safe for one output can be unsafe for another"
+            ],
+            "answer": 2,
+            "explanation": "Escaping or validation must match the destination context."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "An input is HTML-escaped, then used in a SQL query. What should you conclude?",
+            "options": [
+              "The value is always unsafe regardless of parameterization",
+              "HTML escaping does not establish SQL safety; inspect the SQL handling",
+              "The SQL use is safe"
+            ],
+            "answer": 1,
+            "explanation": "Assess defenses for the actual sink, such as SQL parameterization."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Analyzing data flow in JavaScript and TypeScript",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-language-guides/analyzing-data-flow-in-javascript-and-typescript/",
+              "summary": "Language-specific data-flow guidance and examples."
+            },
+            {
+              "kind": "reading",
+              "title": "Creating path queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/creating-path-queries/",
+              "summary": "How to construct path queries that explain flow."
+            }
+          ]
+        },
+        {
+          "title": "Path queries and debugging flow",
+          "duration": "50 min",
+          "summary": "Use path explanations and partial-flow reasoning to diagnose unexpected results.",
+          "notes": [
+            "A path query can present intermediate steps between a source and sink so a reviewer can understand why the analysis connects them. The path is an explanation generated from static analysis facts.",
+            "When the expected path is missing, inspect extraction, source and sink definitions, barriers, and intermediate library models. Partial-flow debugging can help determine which segment is not connected.",
+            "When a path is reported, inspect the real code and data transformations. Confirm reachability and defenses in context; do not treat the visualization as proof that an attacker can trigger the behavior."
+          ],
+          "quiz": {
+            "question": "What is the first useful check when an expected flow is missing?",
+            "options": [
+              "Assume the code is safe",
+              "Confirm the relevant source is present in the database, then inspect flow modeling",
+              "Increase alert severity"
+            ],
+            "answer": 1,
+            "explanation": "Coverage comes before debugging the query model."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A path is broken between two functions. Which investigation is useful?",
+            "options": [
+              "Inspect intermediate flow and relevant library models, then use partial-flow debugging",
+              "Remove all barriers immediately",
+              "Dismiss the result"
+            ],
+            "answer": 0,
+            "explanation": "Partial-flow reasoning helps locate which segment is not modeled."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Analyzing data flow in JavaScript and TypeScript",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-language-guides/analyzing-data-flow-in-javascript-and-typescript/",
+              "summary": "Language-specific data-flow guidance and examples."
+            },
+            {
+              "kind": "reading",
+              "title": "Creating path queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/creating-path-queries/",
+              "summary": "How to construct path queries that explain flow."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "05 · Query quality and testing",
+      "description": "Make custom queries understandable, maintainable, and useful in a review workflow.",
+      "lessons": [
+        {
+          "title": "Query metadata and result presentation",
+          "duration": "40 min",
+          "summary": "Write metadata that explains a query’s intent and result severity.",
+          "notes": [
+            "Metadata describes a query to tools and reviewers. It may identify the query, language, kind, severity, precision, and the message shown with a result.",
+            "For security queries, the chosen kind affects how results are interpreted and displayed. Follow current metadata requirements and examples for the query type you are writing.",
+            "A precise message tells a reviewer what was matched and where to investigate. Avoid claiming exploitability when the query only establishes a code pattern."
+          ],
+          "quiz": {
+            "question": "What is the purpose of query metadata?",
+            "options": [
+              "Describe query identity and how results should be interpreted",
+              "Prove a finding is exploitable",
+              "Replace the query logic"
+            ],
+            "answer": 0,
+            "explanation": "Metadata helps tools and reviewers understand the query and its results."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "The alert message says “critical vulnerability” although the query only finds a broad code pattern. What should change?",
+            "options": [
+              "Keep the message because severity attracts attention",
+              "Remove the source location",
+              "Use a precise description that states the observed pattern without overstating impact"
+            ],
+            "answer": 2,
+            "explanation": "Messages should describe evidence accurately and avoid unsupported claims."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Testing custom queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/testing-custom-queries/",
+              "summary": "Official CLI workflow for query regression tests."
+            },
+            {
+              "kind": "reading",
+              "title": "Metadata for CodeQL queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/",
+              "summary": "Metadata fields used to describe and present query results."
+            }
+          ]
+        },
+        {
+          "title": "Test queries with positive and negative cases",
+          "duration": "50 min",
+          "summary": "Build regression tests that cover expected results and important non-results.",
+          "notes": [
+            "Query tests usually compare observed results against expected locations and diagnostics. A positive case shows the behavior the query should detect.",
+            "Negative cases exercise nearby safe or irrelevant behavior. They are essential because a query that reports every similar-looking call may have poor practical value.",
+            "Keep fixtures small and representative. When the query changes, rerun tests and explain why each expected result should appear or remain absent."
+          ],
+          "quiz": {
+            "question": "Why include negative cases in query tests?",
+            "options": [
+              "To increase the number of alerts",
+              "To replace positive cases",
+              "To ensure nearby safe or irrelevant code is not reported"
+            ],
+            "answer": 2,
+            "explanation": "Negative fixtures guard against noisy matches and overbroad query logic."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A query change adds a new source. What test update is appropriate?",
+            "options": [
+              "Remove old expected results",
+              "Add a positive fixture for the source and negative cases for nearby safe behavior",
+              "Only verify that the query compiles"
+            ],
+            "answer": 1,
+            "explanation": "Tests should capture both intended detections and important non-detections."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Testing custom queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/testing-custom-queries/",
+              "summary": "Official CLI workflow for query regression tests."
+            },
+            {
+              "kind": "reading",
+              "title": "Metadata for CodeQL queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/",
+              "summary": "Metadata fields used to describe and present query results."
+            }
+          ]
+        },
+        {
+          "title": "Precision, performance, and query suites",
+          "duration": "45 min",
+          "summary": "Balance coverage, result quality, and analysis cost.",
+          "notes": [
+            "A query can be technically correct yet too noisy or expensive for routine use. Reviewers need results that are sufficiently relevant, and CI needs analysis that completes reliably.",
+            "Query suites select and combine queries for a workflow. Default suites, extended suites, and custom suites can make different tradeoffs; verify current GitHub documentation before changing repository configuration.",
+            "Tune one source of noise at a time, measure query behavior on representative code, and preserve tests. Do not hide a coverage gap by silently narrowing the analysis."
+          ],
+          "quiz": {
+            "question": "How should a slow query be tuned?",
+            "options": [
+              "Disable all tests",
+              "Measure on representative databases and inspect expensive logic while preserving coverage",
+              "Silently remove a language"
+            ],
+            "answer": 1,
+            "explanation": "Performance tuning should use representative measurements and explicit coverage decisions."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A custom suite omits an expensive query. What must accompany that choice?",
+            "options": [
+              "Document the coverage tradeoff and why it fits the workflow",
+              "Say the omitted issue class is fixed",
+              "Hide the configuration change"
+            ],
+            "answer": 0,
+            "explanation": "Suite composition changes what is analyzed and should be reviewable."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Testing custom queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/codeql-cli/testing-custom-queries/",
+              "summary": "Official CLI workflow for query regression tests."
+            },
+            {
+              "kind": "reading",
+              "title": "Metadata for CodeQL queries",
+              "provider": "GitHub CodeQL Docs",
+              "url": "https://codeql.github.com/docs/writing-codeql-queries/metadata-for-codeql-queries/",
+              "summary": "Metadata fields used to describe and present query results."
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "title": "06 · Scanning and investigation",
+      "description": "Connect repository setup, alert review, and a defensible final report.",
+      "lessons": [
+        {
+          "title": "Code scanning setup and coverage",
+          "duration": "45 min",
+          "summary": "Plan a repository scanning setup that matches its languages and build.",
+          "notes": [
+            "Scanning setup determines when analysis runs, which branches are covered, how languages are built, and which query suites are applied. The setup should match the repository’s development and review process.",
+            "Default setup can reduce configuration work for supported repositories; advanced setup gives more control over workflows. Confirm current GitHub feature behavior and repository eligibility.",
+            "Review results from a known commit and confirm each intended language appears in the analysis. Keep workflow failures visible so an unavailable scan is not mistaken for a clean result."
+          ],
+          "quiz": {
+            "question": "An empty alert list means what if a language was not analyzed?",
+            "options": [
+              "Nothing conclusive about that language’s vulnerabilities",
+              "The language is clean",
+              "The query suite covered it automatically"
+            ],
+            "answer": 0,
+            "explanation": "An unscanned language is outside the evidence available from that run."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "The workflow failed yesterday and lists no alerts. What should a reviewer check?",
+            "options": [
+              "Assume the failure found nothing",
+              "Close old alerts",
+              "Scan status and language/source coverage before interpreting the list"
+            ],
+            "answer": 2,
+            "explanation": "A failed scan cannot support a clean result."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Code scanning setup types",
+              "provider": "GitHub Docs",
+              "url": "https://docs.github.com/en/code-security/concepts/code-scanning/setup-types",
+              "summary": "Compare code scanning configuration approaches."
+            },
+            {
+              "kind": "reading",
+              "title": "Managing code scanning alerts",
+              "provider": "GitHub Docs",
+              "url": "https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/manage-code-scanning-alerts",
+              "summary": "Official alert triage and management guidance."
+            },
+            {
+              "kind": "reading",
+              "title": "CodeQL starter workspace",
+              "provider": "GitHub",
+              "url": "https://github.com/github/vscode-codeql-starter/",
+              "summary": "Starter workspace for exploring CodeQL query authoring in VS Code."
+            }
+          ]
+        },
+        {
+          "title": "Triage an alert with evidence",
+          "duration": "50 min",
+          "summary": "Validate a finding, assess its context, and record a reasoned disposition.",
+          "notes": [
+            "Start with the rule description, highlighted code, path, repository revision, and relevant surrounding code. Identify the source, any transformations, the sink, and the application path that makes the code reachable.",
+            "Look for validation, authorization, framework behavior, configuration, and tests. A finding can be true, false positive, fixed, or accepted with an explicit reason; the label should follow evidence.",
+            "Record the decision and what would change it. Do not dismiss an alert merely because the path is unfamiliar or because the application has not yet reported an incident."
+          ],
+          "quiz": {
+            "question": "What should a reviewer use to validate an alert?",
+            "options": [
+              "The severity label alone",
+              "Whether the code has ever been exploited",
+              "Rule details, highlighted code, path, revision, reachability, and controls"
+            ],
+            "answer": 2,
+            "explanation": "Triage depends on code evidence and application context."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "A generated file triggers an alert but is not shipped. What is relevant?",
+            "options": [
+              "The alert title alone",
+              "Build/deployment context and whether that generated code is in scope",
+              "Only the file extension"
+            ],
+            "answer": 1,
+            "explanation": "Assess the code’s relationship to the shipped application."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Code scanning setup types",
+              "provider": "GitHub Docs",
+              "url": "https://docs.github.com/en/code-security/concepts/code-scanning/setup-types",
+              "summary": "Compare code scanning configuration approaches."
+            },
+            {
+              "kind": "reading",
+              "title": "Managing code scanning alerts",
+              "provider": "GitHub Docs",
+              "url": "https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/manage-code-scanning-alerts",
+              "summary": "Official alert triage and management guidance."
+            },
+            {
+              "kind": "reading",
+              "title": "CodeQL starter workspace",
+              "provider": "GitHub",
+              "url": "https://github.com/github/vscode-codeql-starter/",
+              "summary": "Starter workspace for exploring CodeQL query authoring in VS Code."
+            }
+          ]
+        },
+        {
+          "title": "Capstone: investigate and communicate",
+          "duration": "60 min",
+          "summary": "Produce a concise investigation note based on a sample CodeQL result.",
+          "notes": [
+            "For the capstone, select a small open-source or provided example, identify its language and analyzed revision, and run or inspect one CodeQL finding using the documented workflow.",
+            "Trace the evidence from the alert through the relevant code. State what the static analysis establishes, what you verified manually, and what remains uncertain.",
+            "Your deliverable is a short review note: finding and location, data-flow reasoning, validation evidence, impact assumptions, recommended next action, and any coverage limitations. The course does not execute or grade a live CodeQL scan in the browser."
+          ],
+          "quiz": {
+            "question": "What makes a useful capstone investigation note?",
+            "options": [
+              "A query screenshot without the analyzed commit",
+              "Finding, location, revision, flow reasoning, validation, impact assumptions, and next action",
+              "A claim that the repository is secure"
+            ],
+            "answer": 1,
+            "explanation": "A strong note separates tool evidence, manual validation, assumptions, and recommendations."
+          },
+          "practice": {
+            "type": "scenario",
+            "title": "Apply the idea",
+            "prompt": "You inspected a result but forgot to record the analyzed commit. Why is that a problem?",
+            "options": [
+              "The evidence cannot be tied to the exact source revision",
+              "The query will stop working",
+              "The alert severity becomes unknown"
+            ],
+            "answer": 0,
+            "explanation": "The finding needs a reproducible source revision."
+          },
+          "resources": [
+            {
+              "kind": "reading",
+              "title": "Code scanning setup types",
+              "provider": "GitHub Docs",
+              "url": "https://docs.github.com/en/code-security/concepts/code-scanning/setup-types",
+              "summary": "Compare code scanning configuration approaches."
+            },
+            {
+              "kind": "reading",
+              "title": "Managing code scanning alerts",
+              "provider": "GitHub Docs",
+              "url": "https://docs.github.com/en/code-security/how-tos/find-and-fix-code-vulnerabilities/manage-code-scanning-alerts",
+              "summary": "Official alert triage and management guidance."
+            },
+            {
+              "kind": "reading",
+              "title": "CodeQL starter workspace",
+              "provider": "GitHub",
+              "url": "https://github.com/github/vscode-codeql-starter/",
+              "summary": "Starter workspace for exploring CodeQL query authoring in VS Code."
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -87,6 +87,12 @@ function renderResources(lesson) {
     const rank = (item) => item.kind === 'video' ? 0 : item.kind === 'pdf' || /\.pdf(?:$|[?#])/i.test(item.url || '') ? 1 : 2;
     return rank(a) - rank(b);
   });
+  const kinds = new Set(resources.map((resource) => resource.kind));
+  const availableKinds = ['video', 'reading'].filter((kind) => kinds.has(kind));
+  if (resources.some((resource) => resource.kind === 'pdf' || /\.pdf(?:$|[?#])/i.test(resource.url || ''))) availableKinds.push('PDF');
+  document.querySelector('.resources-intro').textContent = availableKinds.length
+    ? `This lesson links to curated ${availableKinds.map((kind) => ({ video: 'videos', reading: 'readings', PDF: 'PDFs' })[kind]).join(' and ')}. Content can be read or watched here when embedding is supported; source links remain available.`
+    : 'The lesson notes above are the reading; no external resource is attached.';
   root.replaceChildren();
   if (!resources.length) {
     root.append(el('p', 'resources-empty', 'The lesson notes above are the reading for this lesson. More curated sources are being added.'));

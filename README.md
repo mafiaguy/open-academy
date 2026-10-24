@@ -28,7 +28,7 @@ Open <http://127.0.0.1:8000>. The sign-in screen is wired to Better Auth and the
 
 Course learning is designed around curated, attributed resources and practical work. Learning access is intended to be free. A course completion certificate is optional, offered after course requirements are met, and requires a separate fee. The certificate price, actual authentication and enrollment, payment processor, content hosting, and verification service need to be configured before launch.
 
-The five learning spaces cover Security 101, Computer Systems Foundations, Cloud Engineering, Site Reliability Engineering, and DevOps & Deployment. Each has original notes, checks, activities, and optional links to publisher videos/readings. A completed preview shows the planned certificate step, but cannot start checkout or issue an award. See the researched source map in [curriculum/awesome-list-map.md](curriculum/awesome-list-map.md).
+The six learning spaces cover Security 101, Computer Systems Foundations, Cloud Engineering, Site Reliability Engineering, DevOps & Deployment, and CodeQL: From Query to Finding. Each has original notes, checks, activities, and optional publisher resources. A completed preview shows the planned certificate step, but cannot start checkout or issue an award. See the researched source map in [curriculum/awesome-list-map.md](curriculum/awesome-list-map.md).
 
 ## Curriculum contributions
 
