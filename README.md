@@ -1,128 +1,53 @@
-# github-repo-jit
+# OpenTech Academy
 
-Just-in-time repo access for a GitHub org, with **no frontend to build**. A person
-requests access to a repo, one of your 1-2 approvers clicks approve, they get added
-as a collaborator, and a daily job removes them once their expiry date passes.
+OpenTech Academy makes practical computer education clear and connected. Courses cover systems foundations, security, cloud engineering, site reliability, and software deployment.
 
-It uses only native GitHub features: `workflow_dispatch` (the request form),
-Environments + required reviewers (the approval gate), a GitHub App (the
-grant/revoke identity — no long-lived PAT), a cron workflow (the auto-revoke),
-and `grants.json` in git (state + audit log).
+## Run locally
 
-```
-request  ->  human approval  ->  grant collaborator  ->  daily sweep  ->  revoke on expiry
- (form)     (env reviewers)        (App token)            (cron)          (App token)
+Install the pinned dependencies, then run the Vite development server:
+
+```sh
+pnpm install
+pnpm dev
 ```
 
----
+Open <http://127.0.0.1:8000>. The sign-in screen is wired to Better Auth and the configured Convex deployment. Before it can accept accounts, configure the deployment environment listed below. The learning pages still store lesson progress in the current browser; synced enrollment, payment, and certificate issuance are not connected.
 
-## What you need
+## Structure
 
-**On your machine (to run/test locally):**
-- `git`
-- `gh` — GitHub CLI, logged in (`gh auth login`)
-- `jq`
-- `bash`
+- `index.html`, `styles.css`, `brand.css`, `app.js`, `catalog.js` — public company homepage, responsive design, and course search.
+- `courses/<slug>/index.html` — public, crawlable course detail pages.
+- `courses/<slug>/course.json` — course-specific lessons, written explanations, checks, guided activities, curated publisher resources, and Awesome-list discovery sources.
+- `lms/<slug>/` — shared lesson-by-lesson learner view with local preview progress and course completion state.
+- `convex/`, `auth-client.js`, `lms/start.html` — Better Auth email/password sign-in backed by the Convex Better Auth component.
+- `courses/COURSE_TEMPLATE.md` — guidance for adding courses with consistent page structure.
+- `robots.txt`, `sitemap.xml`, `favicon.svg` — public indexing and site identity.
+- `docs/repo-access-automation.md`, `.github/workflows/`, `scripts/`, `grants.json` — repository access automation preserved from the original repository.
 
-**In GitHub (one-time setup):**
-- An **org** (this manages collaborator access to org repos).
-- A **GitHub App** owned by the org, installed on the repos you want to manage.
-- One **repo to host this project** (your "ops" repo) — where these workflows,
-  `grants.json`, and the approvals live.
+## Course and certificate model
 
----
+Course learning is designed around curated, attributed resources and practical work. Learning access is intended to be free. A course completion certificate is optional, offered after course requirements are met, and requires a separate fee. The certificate price, actual authentication and enrollment, payment processor, content hosting, and verification service need to be configured before launch.
 
-## Setup (one-time)
+The six learning spaces cover Security 101, Computer Systems Foundations, Cloud Engineering, Site Reliability Engineering, DevOps & Deployment, and CodeQL: From Query to Finding. Each has original notes, checks, activities, and optional publisher resources. A completed preview shows the planned certificate step, but cannot start checkout or issue an award. See the researched source map in [curriculum/awesome-list-map.md](curriculum/awesome-list-map.md).
 
-### 1. Create the GitHub App
-Org → Settings → Developer settings → GitHub Apps → **New GitHub App**.
-- Repository permissions → **Administration: Read & write** (this is what allows
-  adding/removing collaborators). Nothing else needed.
-- Uncheck Webhook (not used).
-- Create it, then **Generate a private key** (downloads a `.pem`).
-- **Install App** → choose the repos you want JIT to manage (include this ops repo).
-- Note the **App ID**.
+## Curriculum contributions
 
-### 2. Add the App credentials to the ops repo
-Ops repo → Settings →
-- **Secrets and variables → Actions → Variables** → `JIT_APP_ID` = the App ID.
-- **Secrets and variables → Actions → Secrets** → `JIT_APP_KEY` = paste the full
-  contents of the `.pem` file.
+See [CONTRIBUTING.md](CONTRIBUTING.md), [CODE_OF_CONDUCT.md](CODE_OF_CONDUCT.md), and [courses/COURSE_TEMPLATE.md](courses/COURSE_TEMPLATE.md). Link to third-party resources rather than rehosting them, and confirm attribution, access, licensing, and embedding terms.
 
-> Never commit the `.pem`. `.gitignore` already excludes `*.pem`.
+## Hosting
 
-### 3. Create the approval gate (your reviewers)
-Ops repo → Settings → **Environments → New environment** → name it exactly
-`access-approval`.
-- Enable **Required reviewers** and add your **1-2 approvers**.
-- (Optional) set a wait timer or restrict to specific branches.
+The site is configured for Cloudflare Workers Static Assets in `wrangler.jsonc`. Build the static site and bundled auth client before previewing or deploying:
 
-That environment is your entire approval UI — GitHub shows approvers the native
-"Review deployments" approve/reject button.
-
-### 4. Push this repo
-```bash
-git init && git add . && git commit -m "jit repo access"
-git remote add origin git@github.com:<ORG>/<OPS_REPO>.git
-git push -u origin main
+```sh
+pnpm build
+pnpm exec wrangler dev
+pnpm exec wrangler deploy
 ```
 
-Done. No servers, no Lambda, no Identity Center.
+Set the Convex deployment's `SITE_URL`, `CONVEX_SITE_URL`, and generated `BETTER_AUTH_SECRET` before enabling sign-in. Add the matching public Vite variables to the deployment build environment. The current canonical URLs still use `https://opencomp.academy/`; update page metadata, structured data, `robots.txt`, and `sitemap.xml` together after the production domain is confirmed. See [docs/production-readiness.md](docs/production-readiness.md) for remaining launch gates. Analytics, R2, payments, synced progress, and certificate services are not connected.
 
----
+The syllabus and source-linked videos, PDFs, and readings for the five current courses live in [curriculum/research-and-resources.md](curriculum/research-and-resources.md). The GitHub discovery lists and upcoming topic roadmap are in [curriculum/awesome-list-map.md](curriculum/awesome-list-map.md). The material is curated and attributed; third-party content remains hosted by its publisher unless redistribution permission is documented.
 
-## Daily use
+## License
 
-**Request access** (requester needs write on the ops repo — see note below):
-Actions tab → **request-repo-access** → Run workflow → fill username, repo,
-permission, expiry. Or:
-```bash
-gh workflow run request-repo-access.yml \
-  -f username=alice -f repo=payments-api -f permission=push -f expiry=2025-12-31
-```
-The run pauses; an approver approves; the collaborator is added and logged.
-
-**Revoke** happens automatically. `expire-repo-access` runs daily at 03:00 UTC and
-removes anyone whose `expiry` is before today. Run it manually any time from the
-Actions tab to force a sweep.
-
-**Audit** = `git log grants.json`. Every grant and sweep is a commit.
-
----
-
-## Test locally before wiring it up
-
-You can exercise the exact grant/revoke logic the workflows use, straight from your
-machine, using your own `gh` token:
-
-```bash
-# safe dry run of the expiry sweep — prints what WOULD be revoked, changes nothing
-ORG=<your-org> GH_TOKEN=$(gh auth token) DRY_RUN=1 scripts/expire.sh
-
-# grant for real (your gh token needs admin on the repo)
-ORG=<your-org> GH_TOKEN=$(gh auth token) scripts/grant.sh alice test-repo push 2025-12-31
-cat grants.json
-
-# put a past date in grants.json, then run the real sweep to see the revoke
-ORG=<your-org> GH_TOKEN=$(gh auth token) scripts/expire.sh
-```
-
-Locally the scripts only touch the API and `grants.json` — they do not commit or
-push (that part lives in the workflows).
-
----
-
-## Notes / gotchas
-
-- **Access is valid THROUGH the expiry date**; removal happens the day after.
-  Want removal *on* the date? change `<` to `<=` in `scripts/expire.sh`.
-- **Revoke granularity = cron frequency.** Daily = within 24h. Tighten the cron
-  (`scripts/../expire-repo-access.yml`) for same-hour removal.
-- **Who can request.** `workflow_dispatch` requires write on the ops repo. If
-  requesters shouldn't have that, swap the trigger to an **issue form** (anyone can
-  open an issue) and parse its fields into the same `scripts/grant.sh` call — the
-  approval gate stays the same.
-- **Org members vs outside collaborators.** For someone outside the org, the grant
-  creates an invitation they must accept; the sweep removes/cancels accordingly.
-- **The only real secret is `JIT_APP_KEY`.** Keep write access to the ops repo tight
-  since approvals and state live there. No PAT is stored anywhere.
+Choose and add a project license before accepting broad external contributions. Educational content and application code should have explicit, compatible licensing.
